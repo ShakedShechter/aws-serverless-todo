@@ -1,0 +1,43 @@
+/* למרכז את כל המסך - אופקי ואנכי */
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: sans-serif;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+
+  /* מרכז אנכי ואופקי */
+  height: 100vh; /* גובה חלון */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+.input-area {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.input-area input[type="text"] {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.input-area input[type="date"] {
+  padding: 0.5rem;
+  width: 160px;
+}
+
+.input-area button {
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
