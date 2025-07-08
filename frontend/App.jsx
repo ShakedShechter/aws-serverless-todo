@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+/**
+ * Decodes a JWT token and returns its payload.
+ * @param {string} token - JWT string.
+ * @returns {object|null} Decoded payload or null if invalid.
+ */
 function parseJwt(token) {
   try {
     const base64Url = token.split('.')[1]
@@ -17,6 +22,7 @@ function parseJwt(token) {
   }
 }
 
+// AWS and Auth environment configuration
 const API_URL = "https://j76irwz266.execute-api.us-east-1.amazonaws.com/prod"
 const COGNITO_DOMAIN = "https://us-east-1eeev1ta4c.auth.us-east-1.amazoncognito.com"
 const CLIENT_ID = "2pcjgogv7lfe6r9213rn2krqq5"
@@ -30,6 +36,9 @@ function App() {
   const [email, setEmail] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  /**
+   * Handles user authentication redirect, stores token, or redirects to login.
+   */
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes("id_token")) {
@@ -43,12 +52,16 @@ function App() {
     }
     setIsLoading(false)
 
+    // Redirect to login if no token found
     if (!localStorage.getItem("token")) {
       const loginUrl = `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=email+openid+phone`
       window.location.href = loginUrl
     }
   }, [])
 
+  /**
+   * On token update, decode and fetch user data.
+   */
   useEffect(() => {
     if (!token) return
     const decoded = parseJwt(token)
@@ -56,7 +69,9 @@ function App() {
     fetchTodos()
   }, [token])
 
-  // GET /get-all-todo
+  /**
+   * Fetches all todos from the backend (GET /get-all-todo).
+   */
   async function fetchTodos() {
     try {
       const res = await fetch(`${API_URL}/get-all-todo`, {
@@ -70,7 +85,9 @@ function App() {
     }
   }
 
-  // POST /create-todo
+  /**
+   * Creates a new todo item (POST /create-todo).
+   */
   async function handleAdd() {
     if (!token || !newTodo.trim()) return
     const todoData = {
@@ -87,7 +104,7 @@ function App() {
         body: JSON.stringify(todoData)
       })
       if (!res.ok) throw new Error("Failed to add todo")
-      await fetchTodos() // Refresh todos after add
+      await fetchTodos()
       setNewTodo("")
       setDueDate("")
     } catch (err) {
@@ -95,7 +112,10 @@ function App() {
     }
   }
 
-  // PATCH /update-todo/{todoId}
+  /**
+   * Toggles the completed status of a todo item (PATCH /update-todo/{id}).
+   * @param {object} todo - The todo item to update.
+   */
   async function toggleCompleted(todo) {
     if (!token) return
     try {
@@ -108,13 +128,16 @@ function App() {
         body: JSON.stringify({ completed: !todo.completed })
       })
       if (!res.ok) throw new Error("Failed to update todo")
-      await fetchTodos() // Refresh todos after update
+      await fetchTodos()
     } catch (err) {
       console.error(err)
     }
   }
 
-  // DELETE /delete-todo/{todoId}
+  /**
+   * Deletes a todo item (DELETE /delete-todo/{id}).
+   * @param {string} todoId - The ID of the todo to delete.
+   */
   async function handleDelete(todoId) {
     if (!token) return
     try {
@@ -125,12 +148,15 @@ function App() {
         }
       })
       if (!res.ok) throw new Error("Failed to delete todo")
-      await fetchTodos() // Refresh todos after delete
+      await fetchTodos()
     } catch (err) {
       console.error(err)
     }
   }
 
+  /**
+   * Logs out the user by clearing the token and redirecting.
+   */
   function handleLogout() {
     localStorage.removeItem("token")
     setToken(null)
@@ -142,7 +168,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="container">
-        <h1>📝 My Todos</h1>
+        <h1>My Todos</h1>
         <p>Loading... please wait</p>
       </div>
     )
@@ -150,17 +176,17 @@ function App() {
 
   return (
     <div className="container">
-      <h1>📝 My Todos</h1>
+      <h1>My Todos</h1>
 
       {token && email && (
         <div style={{ marginBottom: "1em" }}>
-          <strong>👤 Logged in as: {email}</strong>
+          <strong>Logged in as: {email}</strong>
         </div>
       )}
 
       {token && (
         <div style={{ textAlign: "right", marginBottom: "1em" }}>
-          <button onClick={handleLogout}>🔓 Logout</button>
+          <button onClick={handleLogout}>Logout</button>
         </div>
       )}
 
@@ -179,7 +205,7 @@ function App() {
               onChange={(e) => setDueDate(e.target.value)}
               placeholder="Due date and time"
             />
-            <button onClick={handleAdd}>➕ Add</button>
+            <button onClick={handleAdd}>Add</button>
           </div>
 
           <ul className="todo-list">
@@ -199,7 +225,7 @@ function App() {
                   )}
                 </span>
                 <button onClick={() => handleDelete(todo.todoId)} style={{ marginLeft: 8 }}>
-                  ❌
+                  Delete
                 </button>
               </li>
             ))}
