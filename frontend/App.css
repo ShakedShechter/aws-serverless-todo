@@ -1,4 +1,4 @@
-/* למרכז את כל המסך - אופקי ואנכי */
+/* Center the entire screen - horizontally and vertically */
 body, html {
   height: 100%;
   margin: 0;
@@ -11,14 +11,15 @@ body, html {
   padding: 2rem;
   text-align: center;
 
-  /* מרכז אנכי ואופקי */
-  height: 100vh; /* גובה חלון */
+  /* Center vertically and horizontally */
+  height: 100vh; /* Full viewport height */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
 }
+
 .input-area {
   display: flex;
   gap: 1rem;
