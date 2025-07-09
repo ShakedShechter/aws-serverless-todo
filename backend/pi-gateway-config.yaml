@@ -1,0 +1,173 @@
+openapi: 3.0.1
+info:
+  title: Serverless Todo API
+  description: HTTP API for managing user todos using Lambda + Cognito (non-proxy)
+  version: 1.0.0
+servers:
+  - url: https://your-api-id.execute-api.your-region.amazonaws.com
+
+components:
+  securitySchemes:
+    CognitoAuthorizer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    TodoId:
+      name: todoId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    CORS:
+      description: CORS support
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: string
+          example: 'https://*.amplifyapp.com/'
+        Access-Control-Allow-Methods:
+          schema:
+            type: string
+          example: 'OPTIONS,GET,POST,PUT,DELETE'
+        Access-Control-Allow-Headers:
+          schema:
+            type: string
+          example: 'content-type, authorization'
+
+paths:
+  /create-todo:
+    options:
+      summary: CORS support
+      responses:
+        '200':
+          $ref: '#/components/responses/CORS'
+    post:
+      summary: Create a todo
+      security:
+        - CognitoAuthorizer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Created
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/arn:aws:lambda:{region}:{account-id}:function:create-todo/invocations
+        credentials: arn:aws:iam::{account-id}:role/invoke-lambda-role
+        requestTemplates:
+          application/json: |
+            {
+              "body": $input.json('$'),
+              "headers": {
+                #foreach($header in $input.params().header.keySet())
+                "$header": "$util.escapeJavaScript($input.params().header.get($header))"#if($foreach.hasNext),#end
+                #end
+              }
+            }
+        responses:
+          default:
+            statusCode: 200
+
+  /get-todos:
+    options:
+      summary: CORS support
+      responses:
+        '200':
+          $ref: '#/components/responses/CORS'
+    get:
+      summary: Get all todos
+      security:
+        - CognitoAuthorizer: []
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/arn:aws:lambda:{region}:{account-id}:function:get-all-todo/invocations
+        credentials: arn:aws:iam::{account-id}:role/invoke-lambda-role
+        requestTemplates:
+          application/json: |
+            {
+              "headers": {
+                #foreach($header in $input.params().header.keySet())
+                "$header": "$util.escapeJavaScript($input.params().header.get($header))"#if($foreach.hasNext),#end
+                #end
+              }
+            }
+        responses:
+          default:
+            statusCode: 200
+
+  /update-todo/{todoId}:
+    options:
+      summary: CORS support
+      responses:
+        '200':
+          $ref: '#/components/responses/CORS'
+    put:
+      summary: Update a todo
+      security:
+        - CognitoAuthorizer: []
+      parameters:
+        - $ref: '#/components/parameters/TodoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/arn:aws:lambda:{region}:{account-id}:function:update-todo-handler/invocations
+        credentials: arn:aws:iam::{account-id}:role/invoke-lambda-role
+        requestTemplates:
+          application/json: |
+            {
+              "todoId": "$input.params('todoId')",
+              "body": $input.json('$')
+            }
+        responses:
+          default:
+            statusCode: 200
+
+  /delete-todo/{todoId}:
+    options:
+      summary: CORS support
+      responses:
+        '200':
+          $ref: '#/components/responses/CORS'
+    delete:
+      summary: Delete a todo
+      security:
+        - CognitoAuthorizer: []
+      parameters:
+        - $ref: '#/components/parameters/TodoId'
+      responses:
+        '200':
+          description: Deleted
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: arn:aws:apigateway:{region}:lambda:path/2015-03-31/functions/arn:aws:lambda:{region}:{account-id}:function:delete-todo/invocations
+        credentials: arn:aws:iam::{account-id}:role/invoke-lambda-role
+        requestTemplates:
+          application/json: |
+            {
+              "todoId": "$input.params('todoId')"
+            }
+        responses:
+          default:
+            statusCode: 200
+
